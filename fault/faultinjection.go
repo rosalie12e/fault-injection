@@ -84,31 +84,52 @@ func getParams(requestConfig interface{}, paramToFunc FaultMap) (*utils.FaultCon
 		WebServiceAPIErrorsMap: make(map[string]utils.ErrorTypeMap),
 	}
 
-	//convert requestConfig to map[string]interface{} //TODO tidy this up somehow. error handling?
+	//convert requestConfig to map[string]interface{} //TODO error handling
 	rqConfigByte, _ := json.Marshal(requestConfig)
 	rqConfigMap := make(map[string]interface{})
 	json.Unmarshal([]byte(rqConfigByte), &rqConfigMap)
 
 	//convert faultInjectionParams to FIParams struct
+	fipInt, ok := rqConfigMap["FAULT_INJECTION_PARAM"].(map[string]interface{})
+	if !ok {
+		return defaultConfig, errors.New("can't find FAULT_INJECTION_PARAM")
+	}
+	fipByte, _ := json.Marshal(fipInt)
 	fipMap := utils.FIParamsMap{}
-	fipByte, _ := json.Marshal(rqConfigMap["FAULT_INJECTION_PARAM"])
 	json.Unmarshal([]byte(fipByte), &fipMap)
 
-	tpErrorsByte, _ := json.Marshal(rqConfigMap["THIRD_PARTY_ERRORS_MAP"])
+	//convert ThirdPartyErrorsMap to map[string]string
+	tpErrorsInt, ok := rqConfigMap["THIRD_PARTY_ERRORS_MAP"].(map[string]interface{})
+	if !ok {
+		return defaultConfig, errors.New("can't find THIRD_PARTY_ERRORS_MAP")
+	}
+	tpErrorsByte, _ := json.Marshal(tpErrorsInt)
 	tpErrorsMap := make(map[string]string)
 	json.Unmarshal([]byte(tpErrorsByte), &tpErrorsMap)
 
 	//convert WebServiceAPIErrorsMap to ErrorTypeMap
-	errorMap := make(map[string]utils.ErrorTypeMap)
-	errorByte, _ := json.Marshal(rqConfigMap["WS_API_ERRORS_MAP"])
-	json.Unmarshal([]byte(errorByte), &errorMap)
+	apiErrorsInt, ok := rqConfigMap["WS_API_ERRORS_MAP"].(map[string]interface{})
+	if !ok {
+		return defaultConfig, errors.New("can't find THIRD_PARTY_ERRORS_MAP")
+	}
+	apiErrorByte, _ := json.Marshal(apiErrorsInt)
+	apiErrorMap := make(map[string]utils.ErrorTypeMap)
+	json.Unmarshal([]byte(apiErrorByte), &apiErrorMap)
+
+	//convert WebServiceTimeout to string
+	fmt.Printf("\n Type: %T", rqConfigMap["WS_API_CLIENT_TIME_OUT"])
+	timeoutInt, ok := rqConfigMap["WS_API_CLIENT_TIME_OUT"].(interface{})
+	if !ok {
+		return defaultConfig, errors.New("can't find WS_API_CLIENT_TIME_OUT")
+	}
+	timeout := timeoutInt.(string)
 
 	//map to faultConfig
 	faultConfig := &utils.FaultConfig{
 		FaultInjectionParams:   fipMap,
-		WebserviceTimeout:      rqConfigMap["WS_API_CLIENT_TIME_OUT"].(string),
+		WebserviceTimeout:      timeout,
 		ThirdPartyErrorsMap:    tpErrorsMap,
-		WebServiceAPIErrorsMap: errorMap, //TODO check these have the same values each time.
+		WebServiceAPIErrorsMap: apiErrorMap, //TODO check these have the same values each time.
 	} //TODO check these exist
 
 	//check fault type exists
