@@ -22,7 +22,7 @@ func InjectFault(faultType string, value interface{}, requestConfig interface{})
 
 	defer func() {
 		if err := recover(); err != nil {
-			//faulthelper.ValidateErrorCode("TFM_2009", "PANIC in InjectFault", fmt.Sprintf("%v", err), false)
+			//helper.ValidateErrorCode("TFM_2009", "PANIC in InjectFault", fmt.Sprintf("%v", err), false)
 		}
 	}()
 
@@ -30,22 +30,22 @@ func InjectFault(faultType string, value interface{}, requestConfig interface{})
 	if !initialised {
 		//map functions to failureModes
 		paramToFunc = mapFaults()
-		//faulthelper.DataDogHandle.LogInfo("paramToFunc: ", paramToFunc)
+		//helper.DataDogHandle.LogInfo("paramToFunc: ", paramToFunc)
 		fmt.Print("\n paramToFunc: ", paramToFunc)
 
 		//get parameters
 		params, pErr = getParams(requestConfig, paramToFunc)
-		//faulthelper.DataDogHandle.LogInfo("faultConfig: ", params)
+		//helper.DataDogHandle.LogInfo("faultConfig: ", params)
 		fmt.Print("\n params: ", params)
 		initialised = true
 	}
 
 	//handle error from getParams
 	if pErr != nil {
-		//faulthelper.DataDogHandle.LogError("TFM_2014", "Error in getParams - Fault Injection disabled", pErr.Error())
+		//helper.DataDogHandle.LogError("TFM_2014", "Error in getParams - Fault Injection disabled", pErr.Error())
 		fmt.Print("\n Error: ", pErr.Error())
 	}
-	//faulthelper.DataDogHandle.LogInfo("requestConfig: ", requestConfig)
+	//helper.DataDogHandle.LogInfo("requestConfig: ", requestConfig)
 
 	if params.FaultInjectionParams.IsEnabled && params.FaultInjectionParams.FailureMode == faultType {
 		//fetch correct fault function
@@ -53,7 +53,7 @@ func InjectFault(faultType string, value interface{}, requestConfig interface{})
 
 		//handle nil faultFunction
 		if faultFunction == nil {
-			//faulthelper.DataDogHandle.LogError("TFM_20XX", "Couldn't locate fault function", "", false)
+			//helper.DataDogHandle.LogError("TFM_20XX", "Couldn't locate fault function", "", false)
 			fmt.Print("\n Error: ", "couldn't locate fault function")
 			return value
 		}
@@ -61,7 +61,7 @@ func InjectFault(faultType string, value interface{}, requestConfig interface{})
 		//run fault function
 		modifiedValue, err := faultFunction(params, value)
 		if err != nil {
-			//faulthelper.DataDogHandle.LogError("TFM_20XX", "Error in fault function", err.Error(), false)
+			//helper.DataDogHandle.LogError("TFM_20XX", "Error in fault function", err.Error(), false)
 			fmt.Print("\n Error: ", err.Error())
 			return value
 		}

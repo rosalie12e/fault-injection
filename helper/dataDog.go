@@ -1,4 +1,4 @@
-package faulthelper
+package helper
 
 import (
 	"reflect"
