@@ -1,4 +1,4 @@
-module rosie/fault-injection
+module github.com/rosalie12e/fault-injection
 
 go 1.20
 

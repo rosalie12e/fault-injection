@@ -2,9 +2,10 @@ package faulthelper
 
 import (
 	"encoding/json"
-	"rosie/fault-injection/utils"
 	"runtime/debug"
 	"strings"
+
+	"github.com/rosalie12e/fault-injection/utils"
 )
 
 var (

@@ -1,11 +1,12 @@
 package fault
 
 import (
-	"rosie/fault-injection/faulthelper"
-	"rosie/fault-injection/utils"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/rosalie12e/fault-injection/utils"
 )
 
 // DEFINE LIST OF FAULT TYPES HERE. This is what can be declared in the config store
@@ -32,8 +33,8 @@ func mapFaults() FaultMap { //TODO - fetch list from config store? hard to do.
 // Latency injection for TFM_5001/5002
 func latencyFunc(requestConfig *utils.FaultConfig, value interface{}) (interface{}, error) {
 
-	faulthelper.DataDogHandle.LogInfo("running LatencyFunc")
-	//fmt.Print("\n running LatencyFunc")
+	//faulthelper.DataDogHandle.LogInfo("running LatencyFunc")
+	fmt.Print("\n running LatencyFunc")
 
 	//parse webservice session timeout
 	trimTimeout := strings.TrimSuffix(requestConfig.WebserviceTimeout, "ms")
@@ -46,11 +47,11 @@ func latencyFunc(requestConfig *utils.FaultConfig, value interface{}) (interface
 	timeoutValue := wsTimeout + 1
 
 	//force timeout
-	faulthelper.DataDogHandle.LogInfo("sleeping...")
-	//fmt.Print("\n sleeping...")
+	//faulthelper.DataDogHandle.LogInfo("sleeping...")
+	fmt.Print("\n sleeping...")
 	time.Sleep(time.Duration(timeoutValue) * time.Millisecond)
 
-	faulthelper.DataDogHandle.LogInfo("Fault Injected: latency of ", timeoutValue, " milliseconds")
-	//fmt.Print("\n Fault Injected: latency of ", timeoutValue, " milliseconds")
+	//faulthelper.DataDogHandle.LogInfo("Fault Injected: latency of ", timeoutValue, " milliseconds")
+	fmt.Print("\n Fault Injected: latency of ", timeoutValue, " milliseconds")
 	return nil, nil
 }

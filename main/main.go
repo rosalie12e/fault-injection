@@ -1,6 +1,8 @@
 package main
 
-import "rosie/fault-injection/fault"
+import (
+	"github.com/rosalie12e/fault-injection/fault"
+)
 
 type Config struct {
 	WebserviceTimeout      string                  `json:"WS_API_CLIENT_TIME_OUT"`
