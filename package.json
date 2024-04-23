@@ -1,0 +1,23 @@
+{
+  "name": "fault-injection",
+  "version": "0.0.5",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "release": "commit-and-tag-version",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rosalie12e/fault-injection.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rosalie12e/fault-injection/issues"
+  },
+  "homepage": "https://github.com/rosalie12e/fault-injection#readme",
+  "devDependencies": {
+    "commit-and-tag-version": "^12.4.0"
+  }
+}
