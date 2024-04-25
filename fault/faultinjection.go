@@ -30,12 +30,10 @@ func InjectFault(faultType string, value interface{}, requestConfig interface{})
 	if !initialised {
 		//map functions to failureModes
 		paramToFunc = mapFaults()
-		//helper.DataDogHandle.LogInfo("paramToFunc: ", paramToFunc)
-		fmt.Print("\n paramToFunc: ", paramToFunc)
 
 		//get parameters
 		params, pErr = getParams(requestConfig, paramToFunc)
-		//helper.DataDogHandle.LogInfo("faultConfig: ", params)
+		//helper.DataDogHandle.LogDebug("faultConfig: ", params)
 		fmt.Print("\n params: ", params)
 		initialised = true
 	}
@@ -45,7 +43,7 @@ func InjectFault(faultType string, value interface{}, requestConfig interface{})
 		//helper.DataDogHandle.LogError("TFM_2014", "Error in getParams - Fault Injection disabled", pErr.Error())
 		fmt.Print("\n Error: ", pErr.Error())
 	}
-	//helper.DataDogHandle.LogInfo("requestConfig: ", requestConfig)
+	//helper.DataDogHandle.LogDebug("requestConfig: ", requestConfig)
 
 	if params.FaultInjectionParams.IsEnabled && params.FaultInjectionParams.FailureMode == faultType {
 		//fetch correct fault function
@@ -73,6 +71,8 @@ func InjectFault(faultType string, value interface{}, requestConfig interface{})
 }
 
 func getParams(requestConfig interface{}, paramToFunc FaultMap) (*utils.FaultConfig, error) {
+	fmt.Print("\n Internal")
+
 	//create new instance of FaultConfig with default values
 	defaultConfig := &utils.FaultConfig{
 		FaultInjectionParams: utils.FIParamsMap{
@@ -110,19 +110,20 @@ func getParams(requestConfig interface{}, paramToFunc FaultMap) (*utils.FaultCon
 	//convert WebServiceAPIErrorsMap to ErrorTypeMap
 	apiErrorsInt, ok := rqConfigMap["WS_API_ERRORS_MAP"].(map[string]interface{})
 	if !ok {
-		return defaultConfig, errors.New("can't find THIRD_PARTY_ERRORS_MAP")
+		return defaultConfig, errors.New("can't find WS_API_ERRORS_MAP")
 	}
 	apiErrorByte, _ := json.Marshal(apiErrorsInt)
 	apiErrorMap := make(map[string]utils.ErrorTypeMap)
 	json.Unmarshal([]byte(apiErrorByte), &apiErrorMap)
 
-	//convert WebServiceTimeout to string
-	fmt.Printf("\n Type: %T", rqConfigMap["WS_API_CLIENT_TIME_OUT"])
-	timeoutInt, ok := rqConfigMap["WS_API_CLIENT_TIME_OUT"].(interface{})
+	//convert WebServiceTimeout to string. 2 options for JSON tag.
+	timeout, ok := rqConfigMap["WS_API_CLIENT_TIME_OUT"].(string)
 	if !ok {
-		return defaultConfig, errors.New("can't find WS_API_CLIENT_TIME_OUT")
+		timeout, ok = rqConfigMap["WS_SESSION_TIMEOUT"].(string)
+		if !ok {
+			return defaultConfig, errors.New("can't find value for API Timeout")
+		}
 	}
-	timeout := timeoutInt.(string)
 
 	//map to faultConfig
 	faultConfig := &utils.FaultConfig{
@@ -130,7 +131,7 @@ func getParams(requestConfig interface{}, paramToFunc FaultMap) (*utils.FaultCon
 		WebserviceTimeout:      timeout,
 		ThirdPartyErrorsMap:    tpErrorsMap,
 		WebServiceAPIErrorsMap: apiErrorMap, //TODO check these have the same values each time.
-	} //TODO check these exist
+	}
 
 	//check fault type exists
 	if faultConfig.FaultInjectionParams.IsEnabled {
