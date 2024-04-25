@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.8](https://github.com/rosalie12e/fault-injection/compare/v0.0.7...v0.0.8) (2024-04-25)
+
+
+### Features
+
+* add handling for different API timeout JSON tags ([e825749](https://github.com/rosalie12e/fault-injection/commit/e8257498569ebfff08d1b9d6fcf760e497b8e745))
+
 ## [0.0.7](https://github.com/rosalie12e/fault-injection/compare/v0.0.6...v0.0.7) (2024-04-23)
 
 
