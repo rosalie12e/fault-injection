@@ -1,11 +1,11 @@
 package fault
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/rosalie12e/fault-injection/helper"
 	"github.com/rosalie12e/fault-injection/utils"
 )
 
@@ -33,8 +33,7 @@ func mapFaults() FaultMap { //TODO - fetch list from config store? hard to do.
 // Latency injection for TFM_5001/5002
 func latencyFunc(requestConfig *utils.FaultConfig, value interface{}) (interface{}, error) {
 
-	//helper.DataDogHandle.LogInfo("running LatencyFunc")
-	fmt.Print("\n running LatencyFunc")
+	helper.DataDogHandle.LogInfo("running LatencyFunc")
 
 	//parse webservice session timeout
 	trimTimeout := strings.TrimSuffix(requestConfig.WebserviceTimeout, "ms")
@@ -47,11 +46,9 @@ func latencyFunc(requestConfig *utils.FaultConfig, value interface{}) (interface
 	timeoutValue := wsTimeout + 1
 
 	//force timeout
-	//helper.DataDogHandle.LogInfo("sleeping...")
-	fmt.Print("\n sleeping...")
+	helper.DataDogHandle.LogInfo("sleeping...")
 	time.Sleep(time.Duration(timeoutValue) * time.Millisecond)
 
-	//helper.DataDogHandle.LogInfo("Fault Injected: latency of ", timeoutValue, " milliseconds")
-	fmt.Print("\n Fault Injected: latency of ", timeoutValue, " milliseconds")
+	helper.DataDogHandle.LogInfo("Fault Injected: latency of ", timeoutValue, " milliseconds")
 	return nil, nil
 }

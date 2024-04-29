@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/rosalie12e/fault-injection/helper"
 	"github.com/rosalie12e/fault-injection/utils"
 )
 
@@ -20,9 +21,12 @@ var (
 // function to act as injection point. used in main code to inject fault
 func InjectFault(faultType string, value interface{}, requestConfig interface{}) interface{} {
 
+	helper.DataDogHandle.LogInfo("Running InjectFault")
+	helper.DataDogHandle.LogDebug("requestConfig: ", requestConfig)
+
 	defer func() {
 		if err := recover(); err != nil {
-			//helper.ValidateErrorCode("TFM_2009", "PANIC in InjectFault", fmt.Sprintf("%v", err), false)
+			helper.ValidateErrorCode("TFM_2009", "PANIC in InjectFault", fmt.Sprintf("%v", err), false)
 		}
 	}()
 
@@ -33,34 +37,23 @@ func InjectFault(faultType string, value interface{}, requestConfig interface{})
 
 		//get parameters
 		params, pErr = getParams(requestConfig, paramToFunc)
-		//helper.DataDogHandle.LogDebug("faultConfig: ", params)
-		fmt.Print("\n params: ", params)
+		helper.DataDogHandle.LogInfo("faultConfig: ", params)
 		initialised = true
 	}
 
 	//handle error from getParams
-	if pErr != nil {
-		//helper.DataDogHandle.LogError("TFM_2014", "Error in getParams - Fault Injection disabled", pErr.Error())
-		fmt.Print("\n Error: ", pErr.Error())
+	if pErr != nil { //TODO - swap to validate error code
+		helper.ValidateErrorCode("TFM_2014", "Error in getParams - Fault Injection disabled", pErr.Error(), false)
 	}
-	//helper.DataDogHandle.LogDebug("requestConfig: ", requestConfig)
 
 	if params.FaultInjectionParams.IsEnabled && params.FaultInjectionParams.FailureMode == faultType {
 		//fetch correct fault function
 		faultFunction := paramToFunc.functions[faultType]
 
-		//handle nil faultFunction
-		if faultFunction == nil {
-			//helper.DataDogHandle.LogError("TFM_20XX", "Couldn't locate fault function", "", false)
-			fmt.Print("\n Error: ", "couldn't locate fault function")
-			return value
-		}
-
 		//run fault function
 		modifiedValue, err := faultFunction(params, value)
 		if err != nil {
-			//helper.DataDogHandle.LogError("TFM_20XX", "Error in fault function", err.Error(), false)
-			fmt.Print("\n Error: ", err.Error())
+			helper.ValidateErrorCode("TFM_20XX", "Error in fault function", err.Error(), false)
 			return value
 		}
 
@@ -71,8 +64,7 @@ func InjectFault(faultType string, value interface{}, requestConfig interface{})
 }
 
 func getParams(requestConfig interface{}, paramToFunc FaultMap) (*utils.FaultConfig, error) {
-	fmt.Print("\n Internal")
-
+	helper.DataDogHandle.LogInfo("getting params")
 	//create new instance of FaultConfig with default values
 	defaultConfig := &utils.FaultConfig{
 		FaultInjectionParams: utils.FIParamsMap{
@@ -84,7 +76,7 @@ func getParams(requestConfig interface{}, paramToFunc FaultMap) (*utils.FaultCon
 		WebServiceAPIErrorsMap: make(map[string]utils.ErrorTypeMap),
 	}
 
-	//convert requestConfig to map[string]interface{} //TODO error handling
+	//convert requestConfig to map[string]interface{}
 	rqConfigByte, _ := json.Marshal(requestConfig)
 	rqConfigMap := make(map[string]interface{})
 	json.Unmarshal([]byte(rqConfigByte), &rqConfigMap)
@@ -93,6 +85,10 @@ func getParams(requestConfig interface{}, paramToFunc FaultMap) (*utils.FaultCon
 	fipInt, ok := rqConfigMap["FAULT_INJECTION_PARAM"].(map[string]interface{})
 	if !ok {
 		return defaultConfig, errors.New("can't find FAULT_INJECTION_PARAM")
+	}
+	_, ok = fipInt["IS_ENABLED"].(bool)
+	if !ok {
+		return defaultConfig, errors.New("incorrect type for IS_ENABLED")
 	}
 	fipByte, _ := json.Marshal(fipInt)
 	fipMap := utils.FIParamsMap{}
@@ -130,15 +126,14 @@ func getParams(requestConfig interface{}, paramToFunc FaultMap) (*utils.FaultCon
 		FaultInjectionParams:   fipMap,
 		WebserviceTimeout:      timeout,
 		ThirdPartyErrorsMap:    tpErrorsMap,
-		WebServiceAPIErrorsMap: apiErrorMap, //TODO check these have the same values each time.
+		WebServiceAPIErrorsMap: apiErrorMap,
 	}
 
-	//check fault type exists
+	//check fault type exists. Handles incorrect type for FailureMode and no match between
 	if faultConfig.FaultInjectionParams.IsEnabled {
 		if _, ok := paramToFunc.functions[faultConfig.FaultInjectionParams.FailureMode]; !ok {
 			return defaultConfig, errors.New("can't match FAILURE_MODE to Fault") //TODO make this a warning
 		}
 	}
-
 	return faultConfig, nil
 }
