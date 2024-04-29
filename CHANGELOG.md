@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.9](https://github.com/rosalie12e/fault-injection/compare/v0.0.8...v0.0.9) (2024-04-29)
+
+
+### Features
+
+* unit tests ([0868524](https://github.com/rosalie12e/fault-injection/commit/086852444cdb5e0977abee7b84b6bd6fc1bee3d6))
+
 ## [0.0.8](https://github.com/rosalie12e/fault-injection/compare/v0.0.7...v0.0.8) (2024-04-25)
 
 
