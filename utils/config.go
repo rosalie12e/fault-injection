@@ -6,6 +6,7 @@ type FaultConfig struct {
 	WebServiceAPIErrorsMap map[string]ErrorTypeMap
 	ThirdPartyErrorsMap    map[string]string
 	FaultInjectionParams   FIParamsMap
+	IsVerbose              bool
 }
 
 type FIParamsMap struct {

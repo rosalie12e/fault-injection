@@ -18,6 +18,7 @@ type Config struct {
 	WebServiceAPIErrorsMap map[string]utils.ErrorTypeMap `json:"WS_API_ERRORS_MAP"`
 	ThirdPartyErrorsMap    map[string]string             `json:"THIRD_PARTY_ERRORS_MAP,omitempty"`
 	FaultInjectionParams   map[string]interface{}        `json:"FAULT_INJECTION_PARAM,omitempty"`
+	IsVerbose              bool                          `json:"IS_VERBOSE"`
 	ExtraKey               string
 }
 
@@ -42,9 +43,11 @@ func initConfig() *Config {
 				LessCritical: "",
 			},
 		},
-		ExtraKey: "string",
+		IsVerbose: false,
+		ExtraKey:  "string",
 	}
 
+	//set initialised to false to ensure getParams runs
 	initialised = false
 
 	return config
@@ -181,6 +184,32 @@ func TestInjectMissingValue(t *testing.T) {
 
 	if match == false {
 		t.Errorf("Expected error message not found in logs")
+	}
+}
+
+// TestIsVerbose calls InjectFault with isVerbose = true,
+// checking for log "Fault Injection module config: "
+func TestIsVerbose(t *testing.T) {
+	//assign true to IsVerbose
+	config := initConfig()
+	config.IsVerbose = true
+
+	catchStdout := os.Stdout //save original stdout
+	r, w, _ := os.Pipe()     //create pipe to capture stdout
+	os.Stdout = w
+
+	InjectFault(Latency, nil, &config) //run injectfault
+
+	w.Close()               //close the write end of the pipe
+	os.Stdout = catchStdout //repalce stdOut
+
+	expectedLog := "Fault Injection module config:" //assign desired log
+	logList := tfmLogToStr(r)                       //capture and decode tfmLog
+	t.Log(logList)
+	match := compareLog(logList, expectedLog) //compare logs to expected output
+
+	if match == false {
+		t.Errorf("Debug statements not printed")
 	}
 }
 
