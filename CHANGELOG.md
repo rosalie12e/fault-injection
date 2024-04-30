@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.10](https://github.com/rosalie12e/fault-injection/compare/v0.0.9...v0.0.10) (2024-04-30)
+
+
+### Features
+
+* added logdebug functionality, improved logging ([ed2871d](https://github.com/rosalie12e/fault-injection/commit/ed2871de5a916cd20c486e8c005d2fac9725881c))
+
 ## [0.0.9](https://github.com/rosalie12e/fault-injection/compare/v0.0.8...v0.0.9) (2024-04-29)
 
 
