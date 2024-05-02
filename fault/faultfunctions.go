@@ -31,15 +31,15 @@ func mapFaults() FaultMap { //TODO - fetch list from config store? hard to do.
 }
 
 // Latency injection for TFM_5001/5002
-func latencyFunc(requestConfig *utils.FaultConfig, value interface{}) (interface{}, error) {
+func latencyFunc(faultConfig *utils.FaultConfig, value interface{}) (interface{}, error) {
 
 	helper.DataDogHandle.LogDebug("Injecting fault: Latency")
 
 	//parse webservice session timeout
-	trimTimeout := strings.TrimSuffix(requestConfig.WebserviceTimeout, "ms")
+	trimTimeout := strings.TrimSuffix(faultConfig.WebserviceTimeout, "ms")
 	wsTimeout, err := strconv.Atoi(trimTimeout)
 	if err != nil {
-		return nil, err
+		return value, err
 	}
 
 	//set timeout to more than webservice session timeout

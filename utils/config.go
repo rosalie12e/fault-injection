@@ -4,7 +4,6 @@ package utils
 type FaultConfig struct {
 	WebserviceTimeout      string
 	WebServiceAPIErrorsMap map[string]ErrorTypeMap
-	ThirdPartyErrorsMap    map[string]string
 	FaultInjectionParams   FIParamsMap
 	IsVerbose              bool
 }
@@ -15,6 +14,6 @@ type FIParamsMap struct {
 }
 
 type ErrorTypeMap struct {
-	Critical     string `json:"CRITICAL"`
-	LessCritical string `json:"LESS_CRITICAL"`
+	Critical      string `json:"CRITICAL"`
+	Less_Critical string `json:"LESS_CRITICAL"`
 }

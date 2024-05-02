@@ -14,8 +14,8 @@ import (
 var (
 	paramToFunc FaultMap
 	params      *utils.FaultConfig
-	pErr        error
 	initialised bool
+	pErr        error
 )
 
 // function to act as injection point. used in main code to inject fault
@@ -36,16 +36,17 @@ func InjectFault(faultType string, value interface{}, requestConfig interface{})
 
 		//get parameters
 		params, pErr = getParams(requestConfig, paramToFunc)
-		helper.DataDogHandle.LogInfo("faultConfig: ", params)
+		helper.Config = params
+		helper.DataDogHandle.LogDebug("faultConfig: ", params)
 		initialised = true
+
+		if pErr != nil {
+			helper.ValidateErrorCode("TFM_2033", "Error in getParams - Fault Injection disabled", pErr.Error(), false)
+
+		}
 	}
 	helper.DataDogHandle = helper.NewDataDogHelperImpl(params.IsVerbose)
 	helper.DataDogHandle.LogDebug("Fault Injection module config: ", params)
-
-	//handle error from getParams
-	if pErr != nil {
-		helper.ValidateErrorCode("TFM_2033", "Error in getParams - Fault Injection disabled", pErr.Error(), false)
-	}
 
 	if params.FaultInjectionParams.IsEnabled && params.FaultInjectionParams.FailureMode == faultType {
 		//fetch correct fault function
@@ -74,10 +75,13 @@ func getParams(requestConfig interface{}, paramToFunc FaultMap) (*utils.FaultCon
 			IsEnabled:   false,
 			FailureMode: "",
 		},
-		WebserviceTimeout:      "",
-		ThirdPartyErrorsMap:    make(map[string]string),
-		WebServiceAPIErrorsMap: make(map[string]utils.ErrorTypeMap),
-		IsVerbose:              false,
+		WebserviceTimeout: "",
+		WebServiceAPIErrorsMap: map[string]utils.ErrorTypeMap{
+			"FUNCTIONAL": {
+				Less_Critical: "TFM_2033", //add this here to make sure it always logs as a warning
+			},
+		},
+		IsVerbose: false,
 	}
 
 	//convert requestConfig to map[string]interface{}
@@ -104,15 +108,6 @@ func getParams(requestConfig interface{}, paramToFunc FaultMap) (*utils.FaultCon
 			return faultConfig, errors.New("can't match FAILURE_MODE to Fault")
 		}
 	}
-
-	//convert ThirdPartyErrorsMap to map[string]string
-	tpErrorsInt, ok := rqConfigMap["THIRD_PARTY_ERRORS_MAP"].(map[string]interface{})
-	if !ok {
-		return faultConfig, errors.New("can't find THIRD_PARTY_ERRORS_MAP")
-	}
-	tpErrorsByte, _ := json.Marshal(tpErrorsInt)
-	tpErrorsMap := make(map[string]string)
-	json.Unmarshal([]byte(tpErrorsByte), &tpErrorsMap)
 
 	//convert WebServiceAPIErrorsMap to ErrorTypeMap
 	apiErrorsInt, ok := rqConfigMap["WS_API_ERRORS_MAP"].(map[string]interface{})
@@ -142,7 +137,6 @@ func getParams(requestConfig interface{}, paramToFunc FaultMap) (*utils.FaultCon
 	faultConfig = &utils.FaultConfig{
 		FaultInjectionParams:   fipMap,
 		WebserviceTimeout:      timeout,
-		ThirdPartyErrorsMap:    tpErrorsMap,
 		WebServiceAPIErrorsMap: apiErrorMap,
 		IsVerbose:              isVerbose,
 	}

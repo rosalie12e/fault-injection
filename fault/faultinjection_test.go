@@ -30,17 +30,14 @@ func initConfig() *Config {
 			"FAILURE_MODE": "latency",
 		},
 		WebserviceTimeout: "3000ms",
-		ThirdPartyErrorsMap: map[string]string{
-			"TFM_5002": "context_deadline_exceeded",
-		},
 		WebServiceAPIErrorsMap: map[string]utils.ErrorTypeMap{
 			"FUNCTIONAL": {
-				Critical:     "",
-				LessCritical: "",
+				Critical:      "",
+				Less_Critical: "TFM_2033",
 			},
 			"TECHNICAL": {
-				Critical:     "",
-				LessCritical: "",
+				Critical:      "",
+				Less_Critical: "",
 			},
 		},
 		IsVerbose: false,
