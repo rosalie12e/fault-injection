@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.11](https://github.com/rosalie12e/fault-injection/compare/v0.0.10...v0.0.11) (2024-05-02)
+
+
+### Bug Fixes
+
+* error type not logging correctly. added TFM_2033 as default warning code for module ([975e7d0](https://github.com/rosalie12e/fault-injection/commit/975e7d0903a31d954e070bfd3e7e9c8db67964d3))
+
 ## [0.0.10](https://github.com/rosalie12e/fault-injection/compare/v0.0.9...v0.0.10) (2024-04-30)
 
 
