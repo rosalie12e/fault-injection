@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.12](https://github.com/rosalie12e/fault-injection/compare/v0.0.11...v0.0.12) (2024-05-03)
+
+
+### Bug Fixes
+
+* fix bug in getParams error logging ([7691027](https://github.com/rosalie12e/fault-injection/commit/7691027e11ca27e1014a0cbbf5d2bd09c5aea845))
+
 ## [0.0.11](https://github.com/rosalie12e/fault-injection/compare/v0.0.10...v0.0.11) (2024-05-02)
 
 
