@@ -17,7 +17,6 @@ const (
 
 // Note  - this module only handles internal TFM errors. No 3P error handling is necessary.
 // Note - for ease of use, failure of this module does not cause failure of NDC connector.
-// Therefore, all errors in this connector are logged as warnings.
 
 // Method to log the error according to severity.
 // To display the TFM custom error code for context.title and error in context.message.

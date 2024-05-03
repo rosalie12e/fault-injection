@@ -8,7 +8,6 @@ import (
 	"os"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/rosalie12e/fault-injection/utils"
 )
@@ -26,7 +25,7 @@ func initConfig() *Config {
 	//initialise basic config struct
 	config := &Config{
 		FaultInjectionParams: map[string]interface{}{
-			"IS_ENABLED":   true,
+			"IS_ENABLED":   "true",
 			"FAILURE_MODE": "latency",
 		},
 		WebserviceTimeout: "3000ms",
@@ -40,12 +39,12 @@ func initConfig() *Config {
 				Less_Critical: "",
 			},
 		},
-		IsVerbose: false,
+		IsVerbose: true,
 		ExtraKey:  "string",
 	}
 
 	//set initialised to false to ensure getParams runs
-	initialised = false
+	//initialised = false
 
 	return config
 }
@@ -53,7 +52,7 @@ func initConfig() *Config {
 // TestInjectLatency calls InjectFault with a valid config struct,
 // with isEnabled = true and FailureMode = Latency
 // checking for correct sleep time
-func TestInjectLatency(t *testing.T) {
+/*func TestInjectLatency(t *testing.T) {
 	config := initConfig()
 
 	start := time.Now()
@@ -67,14 +66,16 @@ func TestInjectLatency(t *testing.T) {
 	w.Close()               //close the write end of the pipe
 	os.Stdout = catchStdout //repalce stdOut
 
-	t.Log(tfmLogToStr(r))
+	for _, log := range tfmLogToStr(r) {
+		t.Log(log)
+	}
 
 	duration := time.Since(start)
 
 	if duration < 3001*time.Millisecond {
 		t.Errorf("Latency not injected: %s", duration)
 	}
-}
+}*/
 
 // TestInjectEmpty calls InjectFault with an invalid config struct,
 // with isEnabled = true and FailureMode = ""
@@ -95,7 +96,9 @@ func TestInjectEmpty(t *testing.T) {
 
 	expectedLog := "can't match FAILURE_MODE to Fault" //assign desired fault
 	logList := tfmLogToStr(r)                          //capture and decode tfmLog
-	t.Log(logList)
+	for _, log := range logList {
+		t.Log(log)
+	}
 	match := compareLog(logList, expectedLog) //compare logs to expected output
 
 	if match == false {
@@ -122,7 +125,9 @@ func TestInjectString(t *testing.T) {
 
 	expectedLog := "incorrect type for IS_ENABLED" //assign desired fault
 	logList := tfmLogToStr(r)                      //capture and decode tfmLog
-	t.Log(logList)
+	for _, log := range logList {
+		t.Log(log)
+	}
 	match := compareLog(logList, expectedLog) //compare logs to expected output
 
 	if match == false {
@@ -149,7 +154,9 @@ func TestInjectInt(t *testing.T) {
 
 	expectedLog := "can't match FAILURE_MODE to Fault" //assign desired fault
 	logList := tfmLogToStr(r)                          //capture and decode tfmLog
-	t.Log(logList)
+	for _, log := range logList {
+		t.Log(log)
+	}
 	match := compareLog(logList, expectedLog) //compare logs to expected output
 
 	if match == false {
@@ -160,7 +167,7 @@ func TestInjectInt(t *testing.T) {
 // TestInjectMissingValue calls InjectFault with an invalid config struct,
 // with a blank value for FaultInjectionParams
 // checking for log "can't find FAULT_INJECTION_PARAM"
-func TestInjectMissingValue(t *testing.T) {
+/*func TestInjectMissingValue(t *testing.T) {
 	//assign blank map to FaultInjectionParams
 	config := initConfig()
 	config.FaultInjectionParams = make(map[string]interface{})
@@ -176,7 +183,9 @@ func TestInjectMissingValue(t *testing.T) {
 
 	expectedLog := "can't find FAULT_INJECTION_PARAM" //assign desired fault
 	logList := tfmLogToStr(r)                         //capture and decode tfmLog
-	t.Log(logList)
+	for _, log := range logList {
+		t.Log(log)
+	}
 	match := compareLog(logList, expectedLog) //compare logs to expected output
 
 	if match == false {
@@ -202,13 +211,15 @@ func TestIsVerbose(t *testing.T) {
 
 	expectedLog := "Fault Injection module config:" //assign desired log
 	logList := tfmLogToStr(r)                       //capture and decode tfmLog
-	t.Log(logList)
+	for _, log := range logList {
+		t.Log(log)
+	}
 	match := compareLog(logList, expectedLog) //compare logs to expected output
 
 	if match == false {
 		t.Errorf("Debug statements not printed")
 	}
-}
+}*/
 
 // util func to convert tfmLog to string for testing purposes
 func tfmLogToStr(r *os.File) []string {

@@ -37,14 +37,12 @@ func InjectFault(faultType string, value interface{}, requestConfig interface{})
 		//get parameters
 		params, pErr = getParams(requestConfig, paramToFunc)
 		helper.Config = params
-		helper.DataDogHandle.LogDebug("faultConfig: ", params)
 		initialised = true
-
-		if pErr != nil {
-			helper.ValidateErrorCode("TFM_2033", "Error in getParams - Fault Injection disabled", pErr.Error(), false)
-
-		}
 	}
+	if pErr != nil {
+		helper.ValidateErrorCode("TFM_2033", "Error in getParams - Fault Injection disabled", pErr.Error(), false)
+	}
+
 	helper.DataDogHandle = helper.NewDataDogHelperImpl(params.IsVerbose)
 	helper.DataDogHandle.LogDebug("Fault Injection module config: ", params)
 
@@ -81,7 +79,7 @@ func getParams(requestConfig interface{}, paramToFunc FaultMap) (*utils.FaultCon
 				Less_Critical: "TFM_2033", //add this here to make sure it always logs as a warning
 			},
 		},
-		IsVerbose: false,
+		IsVerbose: true, //force this to be true
 	}
 
 	//convert requestConfig to map[string]interface{}
