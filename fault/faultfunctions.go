@@ -19,8 +19,9 @@ type FaultFunc func(*utils.FaultConfig, interface{}) (interface{}, error)
 
 type FaultMap struct {
 	functions map[string]FaultFunc
-}
+} //TODO move to utils
 
+// TOD) - can this be made a method of FaultMap?
 func mapFaults() FaultMap { //TODO - fetch list from config store? hard to do.
 	paramToFunc := FaultMap{
 		functions: map[string]FaultFunc{

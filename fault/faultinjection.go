@@ -5,7 +5,7 @@ package fault
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
+	"runtime/debug"
 
 	"github.com/rosalie12e/fault-injection/helper"
 	"github.com/rosalie12e/fault-injection/utils"
@@ -25,7 +25,7 @@ func InjectFault(faultType string, value interface{}, requestConfig interface{})
 
 	defer func() {
 		if err := recover(); err != nil {
-			helper.ValidateErrorCode("TFM_2009", "PANIC in InjectFault", fmt.Sprintf("%v", err), false)
+			helper.ValidateErrorCode("TFM_2009", "PANIC in InjectFault", string(debug.Stack()), false)
 		}
 	}()
 
