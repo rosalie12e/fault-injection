@@ -9,26 +9,14 @@ import (
 	"github.com/rosalie12e/fault-injection/utils"
 )
 
-// DEFINE LIST OF FAULT TYPES HERE. This is what can be declared in the config store
-const (
-	Latency = "latency"
-	Fault1  = "fault1"
-)
-
-type FaultFunc func(*utils.FaultConfig, interface{}) (interface{}, error)
-
-type FaultMap struct {
-	functions map[string]FaultFunc
-} //TODO move to utils
-
-// TOD) - can this be made a method of FaultMap?
-func mapFaults() FaultMap { //TODO - fetch list from config store? hard to do.
-	paramToFunc := FaultMap{
-		functions: map[string]FaultFunc{
-			Latency: latencyFunc,
+// TODO - can this be made a method of FaultMap?
+func mapFaults() utils.FaultMap { //TODO - fetch list from config store? hard to do.
+	faultMap := utils.FaultMap{
+		Functions: map[string]utils.FaultFunc{
+			utils.Latency: latencyFunc,
 		},
 	}
-	return paramToFunc
+	return faultMap
 }
 
 // Latency injection for TFM_5001/5002

@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/rosalie12e/fault-injection/utils"
 )
@@ -25,7 +26,7 @@ func initConfig() *Config {
 	//initialise basic config struct
 	config := &Config{
 		FaultInjectionParams: map[string]interface{}{
-			"IS_ENABLED":   "true",
+			"IS_ENABLED":   true,
 			"FAILURE_MODE": "latency",
 		},
 		WebserviceTimeout: "3000ms",
@@ -44,7 +45,7 @@ func initConfig() *Config {
 	}
 
 	//set initialised to false to ensure getParams runs
-	//initialised = false
+	initialised = false
 
 	return config
 }
@@ -52,7 +53,7 @@ func initConfig() *Config {
 // TestInjectLatency calls InjectFault with a valid config struct,
 // with isEnabled = true and FailureMode = Latency
 // checking for correct sleep time
-/*func TestInjectLatency(t *testing.T) {
+func TestInjectLatency(t *testing.T) {
 	config := initConfig()
 
 	start := time.Now()
@@ -61,7 +62,7 @@ func initConfig() *Config {
 	r, w, _ := os.Pipe()     //create pipe to capture stdout
 	os.Stdout = w
 
-	InjectFault(Latency, nil, &config)
+	InjectFault(utils.Latency, nil, &config)
 
 	w.Close()               //close the write end of the pipe
 	os.Stdout = catchStdout //repalce stdOut
@@ -75,7 +76,7 @@ func initConfig() *Config {
 	if duration < 3001*time.Millisecond {
 		t.Errorf("Latency not injected: %s", duration)
 	}
-}*/
+}
 
 // TestInjectEmpty calls InjectFault with an invalid config struct,
 // with isEnabled = true and FailureMode = ""
@@ -89,7 +90,7 @@ func TestInjectEmpty(t *testing.T) {
 	r, w, _ := os.Pipe()     //create pipe to capture stdout
 	os.Stdout = w
 
-	InjectFault(Latency, nil, &config) //run injectfault
+	InjectFault(utils.Latency, nil, &config) //run injectfault
 
 	w.Close()               //close the write end of the pipe
 	os.Stdout = catchStdout //repalce stdOut
@@ -118,7 +119,7 @@ func TestInjectString(t *testing.T) {
 	r, w, _ := os.Pipe()     //create pipe to capture stdout
 	os.Stdout = w
 
-	InjectFault(Latency, nil, &config) //run injectfault
+	InjectFault(utils.Latency, nil, &config) //run injectfault
 
 	w.Close()               //close the write end of the pipe
 	os.Stdout = catchStdout //replace stdOut
@@ -147,7 +148,7 @@ func TestInjectInt(t *testing.T) {
 	r, w, _ := os.Pipe()     //create pipe to capture stdout
 	os.Stdout = w
 
-	InjectFault(Latency, nil, &config) //run injectfault
+	InjectFault(utils.Latency, nil, &config) //run injectfault
 
 	w.Close()               //close the write end of the pipe
 	os.Stdout = catchStdout //replace stdOut
@@ -167,7 +168,7 @@ func TestInjectInt(t *testing.T) {
 // TestInjectMissingValue calls InjectFault with an invalid config struct,
 // with a blank value for FaultInjectionParams
 // checking for log "can't find FAULT_INJECTION_PARAM"
-/*func TestInjectMissingValue(t *testing.T) {
+func TestInjectMissingValue(t *testing.T) {
 	//assign blank map to FaultInjectionParams
 	config := initConfig()
 	config.FaultInjectionParams = make(map[string]interface{})
@@ -176,7 +177,7 @@ func TestInjectInt(t *testing.T) {
 	r, w, _ := os.Pipe()     //create pipe to capture stdout
 	os.Stdout = w
 
-	InjectFault(Latency, nil, &config) //run injectfault
+	InjectFault(utils.Latency, nil, &config) //run injectfault
 
 	w.Close()               //close the write end of the pipe
 	os.Stdout = catchStdout //replace stdOut
@@ -204,7 +205,7 @@ func TestIsVerbose(t *testing.T) {
 	r, w, _ := os.Pipe()     //create pipe to capture stdout
 	os.Stdout = w
 
-	InjectFault(Latency, nil, &config) //run injectfault
+	InjectFault(utils.Latency, nil, &config) //run injectfault
 
 	w.Close()               //close the write end of the pipe
 	os.Stdout = catchStdout //repalce stdOut
@@ -219,7 +220,7 @@ func TestIsVerbose(t *testing.T) {
 	if match == false {
 		t.Errorf("Debug statements not printed")
 	}
-}*/
+}
 
 // util func to convert tfmLog to string for testing purposes
 func tfmLogToStr(r *os.File) []string {

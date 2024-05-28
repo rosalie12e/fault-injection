@@ -1,5 +1,17 @@
 package utils
 
+// DEFINE LIST OF FAULT TYPES HERE. This is what can be declared in the config store
+const (
+	Latency = "latency"
+	Fault1  = "fault1"
+)
+
+type FaultFunc func(*FaultConfig, interface{}) (interface{}, error)
+
+type FaultMap struct {
+	Functions map[string]FaultFunc
+}
+
 // config for this module
 type FaultConfig struct {
 	WebserviceTimeout      string
