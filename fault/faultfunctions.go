@@ -9,18 +9,27 @@ import (
 	"github.com/rosalie12e/fault-injection/utils"
 )
 
-// TODO - can this be made a method of FaultMap?
-func mapFaults() utils.FaultMap { //TODO - fetch list from config store? hard to do.
-	faultMap := utils.FaultMap{
-		Functions: map[string]utils.FaultFunc{
-			utils.Latency: latencyFunc,
-		},
+// define generic Fault strategy interface with Execute method.
+type Fault interface {
+	Execute(*utils.FaultConfig, interface{}) (interface{}, error)
+}
+
+// define struct for each fault type
+type latency struct{}
+
+func faultFactory(faultType string) Fault {
+	// Map fault type to a concrete Fault struct
+	switch faultType {
+	case utils.Latency:
+		return &latency{}
+	// Add cases for other fault types and their corresponding structs here
+	default:
+		return nil // Handle unknown fault types
 	}
-	return faultMap
 }
 
 // Latency injection for TFM_5001/5002
-func latencyFunc(faultConfig *utils.FaultConfig, value interface{}) (interface{}, error) {
+func (f *latency) Execute(faultConfig *utils.FaultConfig, value interface{}) (interface{}, error) {
 
 	helper.DataDogHandle.LogDebug("Injecting fault: Latency")
 

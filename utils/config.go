@@ -17,7 +17,7 @@ type FaultConfig struct {
 	WebserviceTimeout      string
 	WebServiceAPIErrorsMap map[string]ErrorTypeMap
 	FaultInjectionParams   FIParamsMap
-	IsVerbose              bool
+	IsVerbose              bool `json:"IS_VERBOSE"`
 }
 
 type FIParamsMap struct {

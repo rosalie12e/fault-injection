@@ -40,7 +40,7 @@ func initConfig() *Config {
 				Less_Critical: "",
 			},
 		},
-		IsVerbose: true,
+		IsVerbose: false,
 		ExtraKey:  "string",
 	}
 
@@ -78,35 +78,6 @@ func TestInjectLatency(t *testing.T) {
 	}
 }
 
-// TestInjectEmpty calls InjectFault with an invalid config struct,
-// with isEnabled = true and FailureMode = ""
-// checking for error log
-func TestInjectEmpty(t *testing.T) {
-	//assign empty value to FailureMode
-	config := initConfig()
-	config.FaultInjectionParams["FAILURE_MODE"] = ""
-
-	catchStdout := os.Stdout //save original stdout
-	r, w, _ := os.Pipe()     //create pipe to capture stdout
-	os.Stdout = w
-
-	InjectFault(utils.Latency, nil, &config) //run injectfault
-
-	w.Close()               //close the write end of the pipe
-	os.Stdout = catchStdout //repalce stdOut
-
-	expectedLog := "can't match FAILURE_MODE to Fault" //assign desired fault
-	logList := tfmLogToStr(r)                          //capture and decode tfmLog
-	for _, log := range logList {
-		t.Log(log)
-	}
-	match := compareLog(logList, expectedLog) //compare logs to expected output
-
-	if match == false {
-		t.Errorf("Expected error message not found in logs")
-	}
-}
-
 // TestInjectString calls InjectFault with an invalid config struct,
 // with isEnabled = "true" and FailureMode = "latency"
 // checking for log "incorrect type for IS_ENABLED"
@@ -136,25 +107,25 @@ func TestInjectString(t *testing.T) {
 	}
 }
 
-// TestInjectInt calls InjectFault with an invalid config struct,
-// with isEnabled = true and FailureMode = 1
+// TestInjectMissingFunc calls InjectFault with faultType = "fault",
+// isEnabled = true and FailureMode = "fault", with no "fault" function defined.
 // checking for log "can't match FAILURE_MODE to Fault"
-func TestInjectInt(t *testing.T) {
-	//assign int value to FailureMode
+func TestInjectMissingFunc(t *testing.T) {
+	//assign value to FailureMode
 	config := initConfig()
-	config.FaultInjectionParams["FAILURE_MODE"] = 1
+	config.FaultInjectionParams["FAILURE_MODE"] = "fault"
 
 	catchStdout := os.Stdout //save original stdout
 	r, w, _ := os.Pipe()     //create pipe to capture stdout
 	os.Stdout = w
 
-	InjectFault(utils.Latency, nil, &config) //run injectfault
+	InjectFault("fault", nil, &config) //run injectfault
 
 	w.Close()               //close the write end of the pipe
 	os.Stdout = catchStdout //replace stdOut
 
-	expectedLog := "can't match FAILURE_MODE to Fault" //assign desired fault
-	logList := tfmLogToStr(r)                          //capture and decode tfmLog
+	expectedLog := "can't match faultType to Fault Function" //assign desired fault
+	logList := tfmLogToStr(r)                                //capture and decode tfmLog
 	for _, log := range logList {
 		t.Log(log)
 	}
