@@ -1,3 +1,4 @@
+// Standard DataDog package for logging and metrics
 package helper
 
 import (
@@ -39,28 +40,34 @@ type dataDogHelperImpl struct {
 	IsVerbose bool
 }
 
+// activates debug statements
 func NewDataDogHelperImpl(isVerbose bool) dataDogHelperImpl {
 	return dataDogHelperImpl{IsVerbose: isVerbose}
 }
 
+// logs a warning
 func (dataDogHelperImpl) LogWarnWithJSON(jsonObject map[string]interface{}, msg ...interface{}) {
 	ddmodule.LogWarnWithJson(jsonObject, msg...)
 }
 
+// logs an error
 func (di dataDogHelperImpl) LogErrorWithJSON(jsonObject map[string]interface{}, msg ...interface{}) {
 	ddmodule.LogErrorWithJson(jsonObject, msg...)
 }
 
+// logs an info statement
 func (dataDogHelperImpl) LogInfo(msg ...interface{}) {
 	ddmodule.LogInfo(msg...)
 }
 
+// logs a debug statement
 func (di dataDogHelperImpl) LogDebug(msg ...interface{}) {
 	if di.IsVerbose {
 		ddmodule.LogInfo(msg...)
 	}
 }
 
+// adds a metric (e.g responsetime / error / warning etc)
 func (dataDogHelperImpl) AddMetricWithTags(metric string, value float64, additionalTags ...string) {
 	ddmodule.AddMetricWithTags(metric, value, additionalTags...)
 }

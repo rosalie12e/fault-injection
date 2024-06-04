@@ -1,3 +1,4 @@
+// standard generic utility functions for error handling
 package utils
 
 import (

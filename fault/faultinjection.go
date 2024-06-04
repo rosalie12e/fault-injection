@@ -11,44 +11,50 @@ import (
 	"github.com/rosalie12e/fault-injection/utils"
 )
 
+// define global memoisation variables
 var (
 	params      *utils.FaultConfig
 	initialised bool
 	pErr        error
 )
 
-// function to act as injection point. used in main code to inject fault
+// function to act as injection point. used in NDC connector to inject fault
 func InjectFault(faultType string, value interface{}, requestConfig interface{}) interface{} {
 
-	helper.DataDogHandle.LogInfo("Running InjectFault")
+	helper.DataDogHandle.LogInfo("Running InjectFault") //log statement
 
-	//handle panic
+	//handle generic panic
 	defer func() {
 		if err := recover(); err != nil {
 			helper.ValidateErrorCode("TFM_2009", "PANIC in InjectFault", string(debug.Stack()), false)
 		}
 	}()
 
-	//memoisation - check if faultMap and params are initialised
+	//memoisation - check if params are initialised already for the connector
 	if !initialised {
 		//get parameters
 		params, pErr = getParams(requestConfig)
+		//assign params to the config for logging
 		helper.Config = params
+
 		initialised = true
 	}
+	//handle error during getparams
 	if pErr != nil {
 		helper.ValidateErrorCode("TFM_2033", "Error in getParams - Fault Injection disabled", pErr.Error(), false)
 	}
 
 	//activate debug statements
 	helper.DataDogHandle = helper.NewDataDogHelperImpl(params.IsVerbose)
-	helper.DataDogHandle.LogDebug("Fault Injection module config: ", params)
+	helper.DataDogHandle.LogDebug("Fault Injection module config: ", params) //debug statement
 
+	//check if config enables the module
 	if params.FaultInjectionParams.IsEnabled && params.FaultInjectionParams.FailureMode == faultType {
+		helper.DataDogHandle.LogDebug("Fetching fault type: ", faultType) //debug statement
 		//fetch fault function
-		helper.DataDogHandle.LogDebug("Fetching fault type: ", faultType)
 		faultFunc := faultFactory(faultType)
-		//check faultType matches a function.
+
+		//check faultType matches a function and throw error if not
 		if faultFunc == nil {
 			helper.ValidateErrorCode("TFM_2033", "can't match faultType to Fault Function", "", false)
 			return value
@@ -56,6 +62,7 @@ func InjectFault(faultType string, value interface{}, requestConfig interface{})
 
 		//run fault function
 		modifiedValue, err := faultFunc.Execute(params, value)
+		//handle error in fault function
 		if err != nil {
 			helper.ValidateErrorCode("TFM_2033", "Error in fault function", err.Error(), false)
 			return value
@@ -68,12 +75,12 @@ func InjectFault(faultType string, value interface{}, requestConfig interface{})
 }
 
 func getParams(requestConfig interface{}) (*utils.FaultConfig, error) {
-	helper.DataDogHandle.LogInfo("Fetching Fault Injection Parameters")
+	helper.DataDogHandle.LogInfo("Fetching Fault Injection Parameters") //log statement
 
 	//create new instance of FaultConfig with default values
 	faultConfig := &utils.FaultConfig{
 		FaultInjectionParams: utils.FIParamsMap{
-			IsEnabled:   false,
+			IsEnabled:   false, //switches module off if there's an error
 			FailureMode: "",
 		},
 		WebserviceTimeout: "",
@@ -82,29 +89,28 @@ func getParams(requestConfig interface{}) (*utils.FaultConfig, error) {
 				Less_Critical: "TFM_2033", //add this here to make sure it always logs as a warning
 			},
 		},
-		IsVerbose: true, //force this to be true
+		IsVerbose: true, //force this to be true to enable debug statements if there's an error
 	}
 
-	//convert requestConfig to map[string]interface{}
+	//convert requestConfig to map[string]interface{} from interface{}
 	rqConfigByte, _ := json.Marshal(requestConfig)
 	rqConfigMap := make(map[string]interface{})
 	json.Unmarshal([]byte(rqConfigByte), &rqConfigMap)
 
-	//convert faultInjectionParams to FIParams struct and check results
+	//convert faultInjectionParams to FIParams struct from interface{}
 	fipInt, exists := rqConfigMap["FAULT_INJECTION_PARAM"].(map[string]interface{})
 	if !exists {
 		return faultConfig, errors.New("can't find FAULT_INJECTION_PARAM")
 	}
-	//check that IS_ENABLED is bool
-	_, ok := fipInt["IS_ENABLED"].(bool)
+	_, ok := fipInt["IS_ENABLED"].(bool) //check that IS_ENABLED is bool
 	if !ok {
 		return faultConfig, errors.New("incorrect type for IS_ENABLED")
 	}
 	fipByte, _ := json.Marshal(fipInt)
 	fipMap := utils.FIParamsMap{}
-	json.Unmarshal([]byte(fipByte), &fipMap)
+	json.Unmarshal([]byte(fipByte), &fipMap) //map result to FIParamsMap
 
-	//convert WebServiceAPIErrorsMap to ErrorTypeMap
+	//convert WebServiceAPIErrorsMap to ErrorTypeMap from interface{}
 	apiErrorsInt, exists := rqConfigMap["WS_API_ERRORS_MAP"].(map[string]interface{})
 	if !exists {
 		return faultConfig, errors.New("can't find WS_API_ERRORS_MAP")
@@ -113,22 +119,22 @@ func getParams(requestConfig interface{}) (*utils.FaultConfig, error) {
 	apiErrorMap := make(map[string]utils.ErrorTypeMap)
 	json.Unmarshal([]byte(apiErrorByte), &apiErrorMap)
 
-	//convert WebServiceTimeout to string. 2 options for JSON tag.
+	//convert WebServiceTimeout to string from interface{}. 2 options for JSON tag.
 	timeout, exists := rqConfigMap["WS_API_CLIENT_TIME_OUT"].(string)
 	if !exists {
 		timeout, exists = rqConfigMap["WS_SESSION_TIMEOUT"].(string)
 		if !exists {
 			return faultConfig, errors.New("can't find value for API Timeout")
 		}
-	} //TODO for Pricing/Book - assert generic timeout as it's not always specified in the config
+	} //TODO for Pricing/Book - assert generic timeout as it's not always specified in the config.
 
-	//convert IsVerbose to bool
+	//convert IsVerbose to bool from interface{}
 	isVerbose, exists := rqConfigMap["IS_VERBOSE"].(bool)
 	if !exists {
 		helper.DataDogHandle.LogInfo("can't find value for IS_VERBOSE - will not print debug statements.")
 	}
 
-	//map to faultConfig
+	//map results to faultConfig
 	faultConfig = &utils.FaultConfig{
 		FaultInjectionParams:   fipMap,
 		WebserviceTimeout:      timeout,

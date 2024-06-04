@@ -1,29 +1,31 @@
+// declare package
 package fault
 
 import (
-	"bytes"
-	"compress/gzip"
-	"encoding/base64"
-	"io"
-	"os"
-	"strings"
-	"testing"
-	"time"
+	"bytes"           //manipulate bytes
+	"compress/gzip"   //converting gzip data
+	"encoding/base64" //converting base64 data
+	"io"              //basic I/O primitive interfacing
+	"os"              //basic OS interfacing
+	"strings"         //handling UTF-8 strings
+	"testing"         //automated unit testing for Go packages
+	"time"            //manipulating time
 
-	"github.com/rosalie12e/fault-injection/utils"
+	"github.com/rosalie12e/fault-injection/utils" //utility
 )
 
+// define mock requestConfig struct
 type Config struct {
 	WebserviceTimeout      string                        `json:"WS_SESSION_TIMEOUT"`
 	WebServiceAPIErrorsMap map[string]utils.ErrorTypeMap `json:"WS_API_ERRORS_MAP"`
 	ThirdPartyErrorsMap    map[string]string             `json:"THIRD_PARTY_ERRORS_MAP,omitempty"`
 	FaultInjectionParams   map[string]interface{}        `json:"FAULT_INJECTION_PARAM,omitempty"`
 	IsVerbose              bool                          `json:"IS_VERBOSE"`
-	ExtraKey               string
+	ExtraKey               string                        //extra key to check mapping
 }
 
+// initialise mock requestConfig struct
 func initConfig() *Config {
-	//initialise basic config struct
 	config := &Config{
 		FaultInjectionParams: map[string]interface{}{
 			"IS_ENABLED":   true,
@@ -54,26 +56,37 @@ func initConfig() *Config {
 // with isEnabled = true and FailureMode = Latency
 // checking for correct sleep time
 func TestInjectLatency(t *testing.T) {
+	//create requestConfig
 	config := initConfig()
 
+	//mock API POST request time start
 	start := time.Now()
 
-	catchStdout := os.Stdout //save original stdout
-	r, w, _ := os.Pipe()     //create pipe to capture stdout
+	//save original stdout
+	catchStdout := os.Stdout
+	//create pipe to capture stdout
+	r, w, _ := os.Pipe()
 	os.Stdout = w
 
+	//call Inject Fault
 	InjectFault(utils.Latency, nil, &config)
 
-	w.Close()               //close the write end of the pipe
-	os.Stdout = catchStdout //repalce stdOut
+	//close the write end of the pipe
+	w.Close()
+	//replace stdOut
+	os.Stdout = catchStdout
 
+	//print saved logs to console
 	for _, log := range tfmLogToStr(r) {
 		t.Log(log)
 	}
 
+	//mock API POST request time end
 	duration := time.Since(start)
 
+	//check duration and compare to expected timeout
 	if duration < 3001*time.Millisecond {
+		//fail test
 		t.Errorf("Latency not injected: %s", duration)
 	}
 }
@@ -82,26 +95,30 @@ func TestInjectLatency(t *testing.T) {
 // with isEnabled = "true" and FailureMode = "latency"
 // checking for log "incorrect type for IS_ENABLED"
 func TestInjectString(t *testing.T) {
-	//assign empty value to FailureMode
 	config := initConfig()
+	//assign empty value to FailureMode
 	config.FaultInjectionParams["IS_ENABLED"] = "true"
 
-	catchStdout := os.Stdout //save original stdout
-	r, w, _ := os.Pipe()     //create pipe to capture stdout
+	catchStdout := os.Stdout
+	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	InjectFault(utils.Latency, nil, &config) //run injectfault
+	InjectFault(utils.Latency, nil, &config)
 
-	w.Close()               //close the write end of the pipe
-	os.Stdout = catchStdout //replace stdOut
+	w.Close()
+	os.Stdout = catchStdout
 
-	expectedLog := "incorrect type for IS_ENABLED" //assign desired fault
-	logList := tfmLogToStr(r)                      //capture and decode tfmLog
+	//assign desired fault description
+	expectedLog := "incorrect type for IS_ENABLED"
+
+	//capture and decode tfmLog
+	logList := tfmLogToStr(r)
+
 	for _, log := range logList {
 		t.Log(log)
 	}
-	match := compareLog(logList, expectedLog) //compare logs to expected output
-
+	//compare logs to expected output
+	match := compareLog(logList, expectedLog)
 	if match == false {
 		t.Errorf("Expected error message not found in logs")
 	}
@@ -111,25 +128,25 @@ func TestInjectString(t *testing.T) {
 // isEnabled = true and FailureMode = "fault", with no "fault" function defined.
 // checking for log "can't match FAILURE_MODE to Fault"
 func TestInjectMissingFunc(t *testing.T) {
-	//assign value to FailureMode
 	config := initConfig()
+	//assign value to FailureMode
 	config.FaultInjectionParams["FAILURE_MODE"] = "fault"
 
-	catchStdout := os.Stdout //save original stdout
-	r, w, _ := os.Pipe()     //create pipe to capture stdout
+	catchStdout := os.Stdout
+	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	InjectFault("fault", nil, &config) //run injectfault
+	InjectFault("fault", nil, &config)
 
-	w.Close()               //close the write end of the pipe
-	os.Stdout = catchStdout //replace stdOut
+	w.Close()
+	os.Stdout = catchStdout
 
-	expectedLog := "can't match faultType to Fault Function" //assign desired fault
-	logList := tfmLogToStr(r)                                //capture and decode tfmLog
+	expectedLog := "can't match faultType to Fault Function"
+	logList := tfmLogToStr(r)
 	for _, log := range logList {
 		t.Log(log)
 	}
-	match := compareLog(logList, expectedLog) //compare logs to expected output
+	match := compareLog(logList, expectedLog)
 
 	if match == false {
 		t.Errorf("Expected error message not found in logs")
@@ -144,21 +161,21 @@ func TestInjectMissingValue(t *testing.T) {
 	config := initConfig()
 	config.FaultInjectionParams = make(map[string]interface{})
 
-	catchStdout := os.Stdout //save original stdout
-	r, w, _ := os.Pipe()     //create pipe to capture stdout
+	catchStdout := os.Stdout
+	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	InjectFault(utils.Latency, nil, &config) //run injectfault
+	InjectFault(utils.Latency, nil, &config)
 
-	w.Close()               //close the write end of the pipe
-	os.Stdout = catchStdout //replace stdOut
+	w.Close()
+	os.Stdout = catchStdout
 
-	expectedLog := "can't find FAULT_INJECTION_PARAM" //assign desired fault
-	logList := tfmLogToStr(r)                         //capture and decode tfmLog
+	expectedLog := "can't find FAULT_INJECTION_PARAM"
+	logList := tfmLogToStr(r)
 	for _, log := range logList {
 		t.Log(log)
 	}
-	match := compareLog(logList, expectedLog) //compare logs to expected output
+	match := compareLog(logList, expectedLog)
 
 	if match == false {
 		t.Errorf("Expected error message not found in logs")
@@ -193,7 +210,7 @@ func TestIsVerbose(t *testing.T) {
 	}
 }
 
-// util func to convert tfmLog to string for testing purposes
+// utility func to convert tfmLog to string for testing purposes
 func tfmLogToStr(r *os.File) []string {
 	// Read all the log content from the file
 	logenziBytes, _ := io.ReadAll(r) //encoded, zipped, bytes
