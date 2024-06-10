@@ -52,10 +52,10 @@ func initConfig() *Config {
 	return config
 }
 
-// TestInjectLatency calls InjectFault with a valid config struct,
+// TestF1 calls InjectFault with a valid config struct,
 // with isEnabled = true and FailureMode = Latency
 // checking for correct sleep time
-func TestInjectLatency(t *testing.T) {
+func TestF1(t *testing.T) {
 	//create requestConfig
 	config := initConfig()
 
@@ -91,10 +91,10 @@ func TestInjectLatency(t *testing.T) {
 	}
 }
 
-// TestInjectString calls InjectFault with an invalid config struct,
+// TestF2 calls InjectFault with an invalid config struct,
 // with isEnabled = "true" and FailureMode = "latency"
 // checking for log "incorrect type for IS_ENABLED"
-func TestInjectString(t *testing.T) {
+func TestF2(t *testing.T) {
 	config := initConfig()
 	//assign empty value to FailureMode
 	config.FaultInjectionParams["IS_ENABLED"] = "true"
@@ -124,10 +124,10 @@ func TestInjectString(t *testing.T) {
 	}
 }
 
-// TestInjectMissingFunc calls InjectFault with faultType = "fault",
+// TestF3 calls InjectFault with faultType = "fault",
 // isEnabled = true and FailureMode = "fault", with no "fault" function defined.
 // checking for log "can't match FAILURE_MODE to Fault"
-func TestInjectMissingFunc(t *testing.T) {
+func TestF3(t *testing.T) {
 	config := initConfig()
 	//assign value to FailureMode
 	config.FaultInjectionParams["FAILURE_MODE"] = "fault"
@@ -136,7 +136,7 @@ func TestInjectMissingFunc(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stdout = w
 
-	InjectFault("fault", nil, &config)
+	InjectFault("latency", nil, &config)
 
 	w.Close()
 	os.Stdout = catchStdout
@@ -153,10 +153,10 @@ func TestInjectMissingFunc(t *testing.T) {
 	}
 }
 
-// TestInjectMissingValue calls InjectFault with an invalid config struct,
+// TestF4 calls InjectFault with an invalid config struct,
 // with a blank value for FaultInjectionParams
 // checking for log "can't find FAULT_INJECTION_PARAM"
-func TestInjectMissingValue(t *testing.T) {
+func TestF4(t *testing.T) {
 	//assign blank map to FaultInjectionParams
 	config := initConfig()
 	config.FaultInjectionParams = make(map[string]interface{})
@@ -182,9 +182,9 @@ func TestInjectMissingValue(t *testing.T) {
 	}
 }
 
-// TestIsVerbose calls InjectFault with isVerbose = true,
+// TestF5 calls InjectFault with isVerbose = true,
 // checking for log "Fault Injection module config: "
-func TestIsVerbose(t *testing.T) {
+func TestF5(t *testing.T) {
 	//assign true to IsVerbose
 	config := initConfig()
 	config.IsVerbose = true

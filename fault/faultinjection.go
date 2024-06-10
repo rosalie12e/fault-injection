@@ -21,7 +21,7 @@ var (
 // function to act as injection point. used in NDC connector to inject fault
 func InjectFault(faultType string, value interface{}, requestConfig interface{}) interface{} {
 
-	helper.DataDogHandle.LogInfo("Running InjectFault") //log statement
+	helper.DataDogHandle.LogDebug("Running InjectFault") //log statement
 
 	//handle generic panic
 	defer func() {
@@ -49,33 +49,31 @@ func InjectFault(faultType string, value interface{}, requestConfig interface{})
 	helper.DataDogHandle.LogDebug("Fault Injection module config: ", params) //debug statement
 
 	//check if config enables the module
-	if params.FaultInjectionParams.IsEnabled && params.FaultInjectionParams.FailureMode == faultType {
-		helper.DataDogHandle.LogDebug("Fetching fault type: ", faultType) //debug statement
+	if params.FaultInjectionParams.IsEnabled {
 		//fetch fault function
-		faultFunc := faultFactory(faultType)
+		helper.DataDogHandle.LogDebug("Fetching Failure Mode: ", params.FaultInjectionParams.FailureMode) //debug statement
+		faultFunc := faultFactory(params.FaultInjectionParams.FailureMode)
 
 		//check faultType matches a function and throw error if not
 		if faultFunc == nil {
 			helper.ValidateErrorCode("TFM_2033", "can't match faultType to Fault Function", "", false)
 			return value
+		} else if params.FaultInjectionParams.FailureMode == faultType {
+			//run fault function
+			modifiedValue, err := faultFunc.Execute(params, value)
+			//handle error in fault function
+			if err != nil {
+				helper.ValidateErrorCode("TFM_2033", "Error in fault function", err.Error(), false)
+				return value
+			}
+			return modifiedValue
 		}
-
-		//run fault function
-		modifiedValue, err := faultFunc.Execute(params, value)
-		//handle error in fault function
-		if err != nil {
-			helper.ValidateErrorCode("TFM_2033", "Error in fault function", err.Error(), false)
-			return value
-		}
-
-		return modifiedValue
 	}
-
 	return value
 }
 
 func getParams(requestConfig interface{}) (*utils.FaultConfig, error) {
-	helper.DataDogHandle.LogInfo("Fetching Fault Injection Parameters") //log statement
+	helper.DataDogHandle.LogDebug("Fetching Fault Injection Parameters") //log statement
 
 	//create new instance of FaultConfig with default values
 	faultConfig := &utils.FaultConfig{
@@ -131,7 +129,8 @@ func getParams(requestConfig interface{}) (*utils.FaultConfig, error) {
 	//convert IsVerbose to bool from interface{}
 	isVerbose, exists := rqConfigMap["IS_VERBOSE"].(bool)
 	if !exists {
-		helper.DataDogHandle.LogInfo("can't find value for IS_VERBOSE - will not print debug statements.")
+		helper.DataDogHandle.LogInfo("fault-injection can't find value for IS_VERBOSE - will not print debug statements.")
+		isVerbose = false
 	}
 
 	//map results to faultConfig
