@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.15](https://github.com/rosalie12e/fault-injection/compare/v0.0.14...v0.0.15) (2024-06-10)
+
+
+### Bug Fixes
+
+* improve error handling for faultType versus failureMode check. ([a14f58f](https://github.com/rosalie12e/fault-injection/commit/a14f58fe7cd2182c5ae59d61690b3677dab675ee))
+
 ## [0.0.14](https://github.com/rosalie12e/fault-injection/compare/v0.0.13...v0.0.14) (2024-06-10)
 
 ## [0.0.13](https://github.com/rosalie12e/fault-injection/compare/v0.0.12...v0.0.13) (2024-06-03)
